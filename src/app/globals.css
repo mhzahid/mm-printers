@@ -1,0 +1,458 @@
+@import "tailwindcss";
+
+/* ───────────────────────── Design tokens ───────────────────────── */
+@theme {
+  --color-paper: #f6f4ef; /* warm ivory — page ground */
+  --color-stone: #e9e6df; /* trim-card stone */
+  --color-stone-deep: #dcd8ce; /* pressed stone, borders on stone */
+  --color-ink: #171a1c; /* deep charcoal — text, dark sections */
+  --color-ink-soft: #2a2e31; /* raised surface on dark */
+  --color-signal: #f36b35; /* accent orange — marks, never body text on light */
+  --color-muted: #4d4c48; /* secondary text, 7.7:1 on paper, 6.8:1 on stone */
+  --color-muted-dark: #a9a7a1; /* secondary text on ink, 7.4:1 */
+  --color-kraft: #c9b597; /* illustration only */
+  --color-white: #ffffff;
+
+  --font-display: var(--font-archivo), "Arial Narrow", system-ui, sans-serif;
+  --font-sans:
+    var(--font-instrument), system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Fluid type scale (major third, clamped between 360 and 1440px) */
+:root {
+  --step--1: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --step-0: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  --step-1: clamp(1.125rem, 1.07rem + 0.25vw, 1.3125rem);
+  --step-2: clamp(1.375rem, 1.24rem + 0.6vw, 1.75rem);
+  --step-3: clamp(1.75rem, 1.47rem + 1.2vw, 2.5rem);
+  --step-4: clamp(2.25rem, 1.7rem + 2.4vw, 3.75rem);
+  --step-5: clamp(2.75rem, 1.6rem + 5vw, 6rem);
+  --step-6: clamp(3rem, 1.2rem + 8vw, 9.5rem);
+
+  --gutter: clamp(1rem, 0.5rem + 2.4vw, 2.5rem);
+  --section: clamp(4.5rem, 3rem + 6vw, 9rem);
+  --header-h: 4.5rem;
+
+  color-scheme: light;
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--step-0);
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-ink);
+  }
+  /* Browser-drawn surfaces carry the palette too */
+  :root {
+    accent-color: var(--color-ink);
+    caret-color: var(--color-ink);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  .on-ink :focus-visible {
+    outline-color: var(--color-signal);
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Lenis drives smooth scrolling when active; native smooth scrolling would fight it. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+html.lenis {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* Page transitions (PageTransition.tsx). The iris reveal opens a hole from the centre by
+   animating --hole, registered so the browser can interpolate it. */
+@property --hole {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+.page-transition[data-variant="iris"] .page-transition-layer {
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent var(--hole),
+    #000 calc(var(--hole) + 0px)
+  );
+  mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent var(--hole),
+    #000 calc(var(--hole) + 0px)
+  );
+}
+
+/* ───────────────────────── Custom scrollbar ───────────────────────── */
+/* Standard properties (Firefox, Chromium 121+) */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-signal) var(--color-stone);
+}
+/* WebKit fallback (Safari, older Chromium). Native scrollbar stays functional. */
+html::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html::-webkit-scrollbar-track {
+  background: var(--color-stone);
+}
+html::-webkit-scrollbar-thumb {
+  background: var(--color-signal);
+  border: 2px solid var(--color-stone);
+  border-radius: 10px;
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: #d9561f;
+}
+@supports (scrollbar-color: auto) {
+  html::-webkit-scrollbar {
+    width: auto;
+  }
+}
+
+/* ───────────────────────── Components ───────────────────────── */
+@layer components {
+  .container-x {
+    width: 100%;
+    max-width: 92rem;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+  .section-y {
+    padding-block: var(--section);
+  }
+
+  .display-xl {
+    font-family: var(--font-display);
+    font-size: var(--step-6);
+    font-weight: 800;
+    font-stretch: 112%;
+    line-height: 0.9;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+  .display-lg {
+    font-family: var(--font-display);
+    font-size: var(--step-5);
+    font-weight: 800;
+    font-stretch: 112%;
+    line-height: 1.11;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+  /* Section headings: sentence case. Uppercase is reserved for page titles (display-lg/xl),
+     so each page has one shout and the rest reads like the trade writes. */
+  .display-md {
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    font-weight: 700;
+    font-stretch: 100%;
+    line-height: 1.02;
+    letter-spacing: -0.022em;
+  }
+  .title {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    font-weight: 650;
+    font-stretch: 100%;
+    line-height: 1.15;
+  }
+  .lede {
+    font-size: var(--step-1);
+    line-height: 1.55;
+    max-width: 38rem;
+  }
+  .measure {
+    max-width: 36rem;
+  }
+
+  /* Page titles (PageHero): one shared size for every page, as large as the title column allows
+     for the widest word used in any title. SUSTAINABILITY measures 9.47em at the display width and
+     7.58em at the condensed phone width; the divisors add ~2.5% safety. */
+  .fit-title {
+    font-size: min(var(--step-5), calc(100cqi / (9.7 * var(--fit-scale, 1))));
+  }
+  @media (max-width: 479px) {
+    .fit-title {
+      font-size: min(var(--step-5), calc(100cqi / (7.8 * var(--fit-scale, 1))));
+    }
+  }
+
+  /* Narrow phones: condense display type so long words (REQUIREMENTS, SUSTAINABILITY) fit */
+  @media (max-width: 479px) {
+    .display-xl,
+    .display-lg,
+    .display-md {
+      font-stretch: 88%;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+    }
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 3rem;
+    padding: 0.75rem 1.4rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: var(--step-0);
+    line-height: 1.1;
+    transition:
+      transform 0.25s var(--ease-out-quint),
+      background-color 0.25s,
+      color 0.25s,
+      box-shadow 0.25s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn-primary {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+  .btn-primary:hover {
+    background: #000;
+    box-shadow: inset 0 -3px 0 var(--color-signal);
+  }
+  .btn-signal {
+    background: var(--color-signal);
+    color: var(--color-ink);
+  }
+  .btn-signal:hover {
+    background: #ff7d4a;
+  }
+  .btn-ghost {
+    box-shadow: inset 0 0 0 1.5px currentColor;
+  }
+  .btn-ghost:hover {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    box-shadow: inset 0 0 0 1.5px var(--color-ink);
+  }
+  .on-ink .btn-ghost:hover {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    box-shadow: inset 0 0 0 1.5px var(--color-paper);
+  }
+
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 100% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.35s var(--ease-out-quint);
+  }
+  .link-underline:hover {
+    background-size: 0 1px;
+    background-position: 100% 100%;
+  }
+
+  /* The trim card: a stone specimen card with printer's crop marks in the corners, the way
+     a proof is trimmed. The punched hole (.trim-hole) is added only for swing tickets. */
+  .trim-card {
+    position: relative;
+    background: var(--color-stone);
+    border-radius: 4px;
+    isolation: isolate;
+    --mark: color-mix(in srgb, currentColor 38%, transparent);
+    --mark-len: 14px;
+  }
+  .trim-card::before {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    pointer-events: none;
+    z-index: 1;
+    background:
+      linear-gradient(var(--mark), var(--mark)) top left / var(--mark-len) 1px,
+      linear-gradient(var(--mark), var(--mark)) top left / 1px var(--mark-len),
+      linear-gradient(var(--mark), var(--mark)) top right / var(--mark-len) 1px,
+      linear-gradient(var(--mark), var(--mark)) top right / 1px var(--mark-len),
+      linear-gradient(var(--mark), var(--mark)) bottom left / var(--mark-len) 1px,
+      linear-gradient(var(--mark), var(--mark)) bottom left / 1px var(--mark-len),
+      linear-gradient(var(--mark), var(--mark)) bottom right / var(--mark-len) 1px,
+      linear-gradient(var(--mark), var(--mark)) bottom right / 1px var(--mark-len);
+    background-repeat: no-repeat;
+  }
+  .trim-hole {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-paper);
+    box-shadow:
+      inset 0 1px 2px rgb(0 0 0 / 0.25),
+      0 0 0 3px color-mix(in srgb, var(--color-ink) 10%, transparent);
+    z-index: 2;
+  }
+
+  /* Placeholder frame for photography that has not been supplied yet */
+  .awaiting-photo {
+    background-color: var(--color-stone);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 14px,
+      color-mix(in srgb, var(--color-ink) 6%, transparent) 14px 15px
+    );
+  }
+  .on-ink .awaiting-photo {
+    background-color: var(--color-ink-soft);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 14px,
+      color-mix(in srgb, var(--color-paper) 7%, transparent) 14px 15px
+    );
+  }
+
+  /* Chromium draws date segments in its own font; keep them in the site font */
+  .field::-webkit-datetime-edit,
+  .field::-webkit-date-and-time-value {
+    font: inherit;
+  }
+  .field::placeholder {
+    color: var(--color-muted);
+    opacity: 1;
+  }
+  .field {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.7rem 0.9rem;
+    background: var(--color-white);
+    border: 1.5px solid var(--color-stone-deep);
+    border-radius: 6px;
+    font: inherit;
+    color: inherit;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .field:hover {
+    border-color: #bdb8ad;
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-ink);
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--color-signal) 45%, transparent);
+  }
+  .field[aria-invalid="true"] {
+    border-color: #b3261e;
+  }
+}
+
+/* Reveal elements start visible; JS adds .js-motion to <html> before hiding them. */
+.js-motion [data-reveal],
+.js-motion [data-reveal="stagger"] [data-reveal-item] {
+  opacity: 0;
+}
+
+/* Page titles: words wait below their masks until the motion script lifts them */
+.js-motion [data-reveal="words"] [data-word] {
+  transform: translateY(115%);
+}
+
+/* Hero initial state, applied only when the motion script will run */
+.js-motion .hero-line {
+  transform: translateY(105%);
+}
+.js-motion #hero-board {
+  clip-path: inset(100% 0% 0% 0% round 6px);
+}
+.js-motion .hero-piece,
+.js-motion .hero-cap,
+.js-motion .hero-fade {
+  opacity: 0;
+}
+
+@keyframes cardin {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes scrollcue {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(200%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .js-motion [data-reveal],
+  .js-motion [data-reveal-item] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
